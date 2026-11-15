@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard · Expense Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            background: #f1f5f9;
+            color: #0f172a;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        /* Top Navbar */
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .nav-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+        .brand-badge {
+            width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white; display: grid; place-items: center; font-size: 16px;
+        }
+        .user-actions { display: flex; align-items: center; gap: 12px; }
+        .user-pill {
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .btn-logout {
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .btn-logout:hover { background: #fef2f2; }
+
+        /* Main Container */
+        .container { max-width: 960px; margin: 28px auto; padding: 0 20px; }
+
+        /* Hero Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        .hero-card {
+            background: linear-gradient(135deg, #4f46e5, #6366f1 60%, #7c3aed);
+            color: white;
+            padding: 26px 28px;
+            border-radius: 18px;
+            box-shadow: 0 12px 24px -8px rgba(79, 70, 229, 0.45);
+        }
+        .hero-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; }
+        .hero-value { font-size: 34px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; }
+
+        .count-card {
+            background: #ffffff;
+            padding: 26px 24px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .count-label { font-size: 13px; color: #64748b; font-weight: 600; }
+        .count-value { font-size: 28px; font-weight: 700; color: #0f172a; margin-top: 6px; }
+
+        /* Card Section */
+        .card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+            margin-bottom: 24px;
+        }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1e293b; }
+
+        /* Add Expense Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.3fr 1.3fr auto;
+            gap: 12px;
+        }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+        .btn-add {
+            padding: 11px 22px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-add:hover { background: #4338ca; }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        tr:hover td { background: #f8fafc; }
+        .cat-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #eef2ff;
+            color: #4338ca;
+        }
+        .amount-cell { font-weight: 700; color: #0f172a; }
+        .action-group { display: flex; justify-content: flex-end; gap: 8px; }
+        .btn-edit {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #d97706;
+            background: #fef3c7;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-edit:hover { background: #fde68a; }
+        .btn-del {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #dc2626;
+            background: #fef2f2;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-del:hover { background: #fee2e2; }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Edit Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 18px;
+            padding: 26px;
+            box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .modal-header h3 { font-size: 18px; font-weight: 700; }
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .modal-field { margin-bottom: 14px; }
+        .modal-field label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-cancel {
+            padding: 10px 18px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-inner">
+        <div class="brand">
+            <div class="brand-badge">₹</div>
+            <span>Expense Management System</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-pill" th:text="'@' + ${username}">@user</span>
+            <a th:href="@{/logout}" class="btn-logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<main class="container">
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+        <div class="hero-card">
+            <div class="hero-label">Total Expenses</div>
+            <div class="hero-value" th:text="'₹' + ${#numbers.formatDecimal(totalAmount, 1, 2)}">₹0.00</div>
+        </div>
+        <div class="count-card">
+            <div class="count-label">Total Transactions</div>
+            <div class="count-value" th:text="${#lists.size(expenses)}">0</div>
+        </div>
+    </div>
+
+    <!-- Add Expense Form -->
+    <div class="card">
+        <div class="card-title">Add New Expense</div>
+        <div th:if="${param.error}" class="alert-error">
+            Please enter a valid title, positive amount, and non-future date.
+        </div>
+        <form th:action="@{/expenses/add}" method="post" class="form-grid">
+            <input type="text" name="title" placeholder="What did you spend on?" required>
+            <input type="number" step="0.01" min="0.01" name="amount" placeholder="Amount (₹)" required>
+            <select name="category">
+                <option value="Food">🍔 Food</option>
+                <option value="Travel">⛽ Travel</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">🧾 Bills</option>
+                <option value="Other">📦 Other</option>
+            </select>
+            <input type="date" name="date" th:value="${today}" th:max="${today}" required>
+            <button type="submit" class="btn-add">+ Add</button>
+        </form>
+    </div>
+
+    <!-- Expense History Table -->
+    <div class="card">
+        <div class="card-title">Recent Expenses</div>
+        <div th:if="${#lists.isEmpty(expenses)}" class="empty-state">
+            No expenses recorded yet. Add your first expense above!
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(expenses)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="exp : ${expenses}">
+                    <td style="color: #64748b;" th:text="${exp.date}">2026-11-15</td>
+                    <td style="font-weight: 600;" th:text="${exp.title}">Coffee</td>
+                    <td><span class="cat-badge" th:text="${exp.category}">Food</span></td>
+                    <td class="amount-cell" th:text="'₹' + ${#numbers.formatDecimal(exp.amount, 1, 2)}">₹150.00</td>
+                    <td>
+                        <div class="action-group">
+                            <button type="button" class="btn-edit"
+                                    th:data-id="${exp.id}"
+                                    th:data-title="${exp.title}"
+                                    th:data-amount="${exp.amount}"
+                                    th:data-category="${exp.category}"
+                                    th:data-date="${exp.date}"
+                                    onclick="openEditModal(this)">Edit</button>
+                            <a th:href="@{/expenses/delete/{id}(id=${exp.id})}"
+                               class="btn-del"
+                               onclick="return confirm('Delete this expense?')">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Edit Expense Modal -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Update Expense</h3>
+            <button type="button" class="btn-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form id="editForm" method="post">
+            <div class="modal-field">
+                <label for="editTitle">Title</label>
+                <input type="text" id="editTitle" name="title" required>
+            </div>
+            <div class="modal-field">
+                <label for="editAmount">Amount (₹)</label>
+                <input type="number" step="0.01" min="0.01" id="editAmount" name="amount" required>
+            </div>
+            <div class="modal-field">
+                <label for="editCategory">Category</label>
+                <select id="editCategory" name="category">
+                    <option value="Food">🍔 Food</option>
+                    <option value="Travel">⛽ Travel</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Bills">🧾 Bills</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label for="editDate">Date</label>
+                <input type="date" id="editDate" name="date" th:max="${today}" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn-add">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        document.getElementById('editForm').action = '/expenses/update/' + id;
+        document.getElementById('editTitle').value = btn.getAttribute('data-title');
+        document.getElementById('editAmount').value = btn.getAttribute('data-amount');
+        document.getElementById('editCategory').value = btn.getAttribute('data-category');
+        document.getElementById('editDate').value = btn.getAttribute('data-date');
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+</script>
+
+</body>
+</html>

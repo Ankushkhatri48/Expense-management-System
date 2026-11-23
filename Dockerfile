@@ -1,12 +1,10 @@
-# Stage 1: Build JAR using Java 25 JDK & Maven Wrapper
-FROM eclipse-temurin:25-jdk AS build
+# Stage 1: Build JAR using Java 25 JDK & Maven
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /app
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline
+COPY pom.xml .
+RUN mvn dependency:go-offline
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Stage 2: Lightweight Runtime Image
 FROM eclipse-temurin:25-jre

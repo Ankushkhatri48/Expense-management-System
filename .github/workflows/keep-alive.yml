@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Ping Login Page
         run: |
-          curl -f -s -o /dev/null https://expense-management-system-9nlk.onrender.com/login || exit 1
+          curl -f -s -o /dev/null https://expense-management-system-9nlk.onrender.com/health || exit 1

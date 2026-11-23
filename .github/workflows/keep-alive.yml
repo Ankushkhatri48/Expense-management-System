@@ -1,0 +1,14 @@
+name: Keep Expense System Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Login Page
+        run: |
+          curl -f -s -o /dev/null https://expense-management-system-9nlk.onrender.com/login || exit 1
